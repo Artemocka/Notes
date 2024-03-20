@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/underlay"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:elevation="8dp"
+    >
+
+    <FrameLayout
+        android:id="@+id/bottomsheet"
+        style="@style/Widget.Material3.BottomSheet"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipToOutline="true"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+        >
+
+        <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+            android:layout_width="match_parent"
+            android:layout_height="28dp"
+
+            android:paddingBottom="0dp"
+
+            />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="8dp"
+                android:gravity="center"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                >
+
+                <ImageView
+                    android:id="@+id/color1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:foreground="?selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_circle"
+                    />
+
+                <ImageView
+                    android:id="@+id/color2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:foreground="?selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_circle"
+                    />
+
+                <ImageView
+                    android:id="@+id/color3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:foreground="?selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_circle"
+                    />
+
+                <ImageView
+                    android:id="@+id/color4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:foreground="?selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_circle"
+                    />
+
+                <ImageView
+                    android:id="@+id/color5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:foreground="?selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_circle"
+                    />
+
+                <ImageView
+                    android:id="@+id/color6"
+                    android:layout_marginEnd="16dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:foreground="?selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_circle"
+                    />
+                <ImageView
+                    android:id="@+id/color7"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:foreground="?selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_circle"
+                    />
+            </LinearLayout>
+
+            <include
+                android:id="@+id/edit"
+                layout="@layout/item_option"
+                />
+
+            <include
+                android:id="@+id/remove"
+                layout="@layout/item_option"
+                />
+        </LinearLayout>
+    </FrameLayout>
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

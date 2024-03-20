@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    style="@style/Widget.Material3.CardView.Filled"
+    app:cardCornerRadius="16dp"
+    android:foreground="?selectableItemBackground"
+    android:orientation="vertical"
+    >
+
+   <LinearLayout
+       android:layout_width="match_parent"
+       android:layout_height="match_parent"
+       android:orientation="vertical"
+       >
+
+       <TextView
+           android:id="@+id/title"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_marginHorizontal="@dimen/text_margin"
+           android:layout_marginTop="@dimen/text_margin"
+           android:layout_marginBottom="4dp"
+           android:textAppearance="?attr/textAppearanceListItem"
+           tools:text="Название заметки"
+           android:maxLength="30"
+           />
+
+       <TextView
+           android:id="@+id/note"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_marginHorizontal="@dimen/text_margin"
+           android:layout_marginBottom="8dp"
+           tools:text="сделать что то, "
+           />
+       <ImageButton
+           android:id="@+id/pin"
+           android:layout_margin="16dp"
+           android:src="@drawable/ic_star"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_gravity="end|bottom"/>
+   </LinearLayout>
+</androidx.cardview.widget.CardView>
