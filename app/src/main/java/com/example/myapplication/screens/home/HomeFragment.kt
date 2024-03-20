@@ -63,8 +63,9 @@ class HomeFragment : Fragment(), NoteRecyclerViewAdapter.NoteItemListener,Pinned
         lifecycleScope.launch {
             DatabaseProviderWrap.noteDao.getAll().collect {
                 val lists = it.splitList()
-                poop("pinned: ${lists.first}")
-                poop("unpinned: ${lists.second}\n")
+                poop("$it")
+//                poop("pinned: ${lists.first}")
+//                poop("unpinned: ${lists.second}\n")
 
                 pinnedAdapter.submitList(lists.first)
                 unPinnedAdapter.submitList(lists.second)

@@ -44,8 +44,7 @@ class PinnedNoteAdapter :
             true
         }
         binding.pin.setOnClickListener {
-            val pinned = currentList[viewHolder.bindingAdapterPosition]
-            listener?.onStarClick(currentList[viewHolder.bindingAdapterPosition].copy(pinned =!pinned.pinned ))
+            listener?.onStarClick(currentList[viewHolder.bindingAdapterPosition])
         }
 
 
