@@ -3,20 +3,23 @@ package com.example.myapplication.screens.home
 
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.Color
+import android.graphics.Outline
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
+import android.view.ViewOutlineProvider
 import android.view.inputmethod.InputMethodManager
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat.Type
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePaddingRelative
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -26,26 +29,26 @@ import com.example.myapplication.DatabaseProviderWrap
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentHomeBinding
 import com.example.myapplication.db.Note
+import com.example.myapplication.getBlendedColor
+import com.example.myapplication.getThemeColor
 import com.example.myapplication.poop
-import com.example.myapplication.screens.home.recycler.NoteRecyclerViewAdapter
-import com.example.myapplication.screens.home.recycler.PinnedNoteAdapter
+import com.example.myapplication.screens.home.recycler.NoteAdapter
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import kotlin.math.min
 
-class HomeFragment : Fragment(), NoteRecyclerViewAdapter.NoteItemListener,PinnedNoteAdapter.NoteItemListener {
+class HomeFragment : Fragment(), NoteAdapter.NoteItemListener {
 
 
     private lateinit var binding: FragmentHomeBinding
-    private val unPinnedAdapter = NoteRecyclerViewAdapter()
-    private val pinnedAdapter = PinnedNoteAdapter()
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
+    private val unPinnedAdapter = NoteAdapter()
+    private val pinnedAdapter = NoteAdapter()
+    private val filter = MutableStateFlow("")
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentHomeBinding.inflate(layoutInflater)
         val behavior = binding.included.bottomsheet.getBehavior()
@@ -57,15 +60,35 @@ class HomeFragment : Fragment(), NoteRecyclerViewAdapter.NoteItemListener,Pinned
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        pinnedAdapter.listener= this
+        pinnedAdapter.listener = this
         unPinnedAdapter.listener = this
-        binding.list.adapter = ConcatAdapter(pinnedAdapter,unPinnedAdapter)
+        binding.list.adapter = ConcatAdapter(pinnedAdapter, unPinnedAdapter)
+        lifecycleScope.launch {
+            combine(
+                DatabaseProviderWrap.noteDao.getAll(), filter
+            ) { list, query ->
+                if (query.isEmpty()) {
+                    Log.e("", "combine if $query")
+                    list
+                } else {
+                    Log.e("", "combine else $query")
+
+                    list.filter {
+                        it.title.contains(
+                            query, true
+                        ) || it.content.contains(query, true)
+                    }
+                }
+            }.collect {
+                Log.e("", "${it.size}")
+                val split = it.splitList()
+                pinnedAdapter.submitList(split.first)
+                unPinnedAdapter.submitList(split.second)
+            }
+        }
         lifecycleScope.launch {
             DatabaseProviderWrap.noteDao.getAll().collect {
                 val lists = it.splitList()
-                poop("$it")
-//                poop("pinned: ${lists.first}")
-//                poop("unpinned: ${lists.second}\n")
 
                 pinnedAdapter.submitList(lists.first)
                 unPinnedAdapter.submitList(lists.second)
@@ -96,7 +119,7 @@ class HomeFragment : Fragment(), NoteRecyclerViewAdapter.NoteItemListener,Pinned
 
             windowInsets
         }
-        binding.add.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+        binding.add.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
             binding.list.updatePaddingRelative(bottom = (v.parent as View).height - v.top)
         }
         binding.add.setOnClickListener {
@@ -109,8 +132,7 @@ class HomeFragment : Fragment(), NoteRecyclerViewAdapter.NoteItemListener,Pinned
             binding.toolbar.menu.findItem(R.id.app_bar_search).isVisible = false
             binding.searchBar.searchEditText.requestFocus()
             binding.searchBar.searchIcon.isVisible = false
-            val imm =
-                binding.root.context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+            val imm = binding.root.context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
             imm?.showSoftInput(binding.searchBar.searchEditText, 0)
 
             true
@@ -123,6 +145,12 @@ class HomeFragment : Fragment(), NoteRecyclerViewAdapter.NoteItemListener,Pinned
             binding.searchBar.searchIcon.isVisible = true
             hideKeyboard()
 
+        }
+        binding.searchBar.searchEditText.addTextChangedListener {
+
+            lifecycleScope.launch {
+                filter.emit(it.toString())
+            }
         }
 
         val behavior = binding.included.bottomsheet.getBehavior()
@@ -146,8 +174,7 @@ class HomeFragment : Fragment(), NoteRecyclerViewAdapter.NoteItemListener,Pinned
     }
 
     private fun hideKeyboard() {
-        val imm =
-            binding.root.context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        val imm = binding.root.context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
         imm?.hideSoftInputFromWindow(binding.root.windowToken, 0)
     }
 
@@ -167,8 +194,7 @@ class HomeFragment : Fragment(), NoteRecyclerViewAdapter.NoteItemListener,Pinned
     }
 
 
-    private inner class BottomSheetCallbackImpl(private val underlay: View) :
-        BottomSheetBehavior.BottomSheetCallback() {
+    private inner class BottomSheetCallbackImpl(private val underlay: View) : BottomSheetBehavior.BottomSheetCallback() {
         override fun onStateChanged(bottomSheet: View, newState: Int) {
             Log.e("", "onStateChanged\t$newState")
             when (newState) {
@@ -206,18 +232,26 @@ class HomeFragment : Fragment(), NoteRecyclerViewAdapter.NoteItemListener,Pinned
             behavior.state = BottomSheetBehavior.STATE_EXPANDED
         }
 
-        binding.included.edit.icon.setImageResource(R.drawable.ic_edit)
-        binding.included.edit.title.setText(R.string.edit)
-        binding.included.edit.root.setOnClickListener {
-            behavior.setState(BottomSheetBehavior.STATE_HIDDEN)
-            findNavController().navigate(HomeFragmentDirections.actionEdit(item.id))
-
+        binding.included.clearColor.icon.setImageResource(R.drawable.ic_clear)
+        binding.included.clearColor.title.setText(R.string.clear_color)
+        binding.included.clearColor.root.setOnClickListener {
+            behavior.state = BottomSheetBehavior.STATE_HIDDEN
+            DatabaseProviderWrap.noteDao.update(item.copy(color = 0))
 
         }
 
+        binding.included.edit.icon.setImageResource(R.drawable.ic_edit)
+        binding.included.edit.title.setText(R.string.edit)
+        binding.included.edit.root.setOnClickListener {
+            behavior.state = BottomSheetBehavior.STATE_HIDDEN
+            findNavController().navigate(HomeFragmentDirections.actionEdit(item.id))
+        }
+
         binding.included.remove.icon.setImageResource(R.drawable.ic_delete)
-        binding.included.remove.icon.imageTintList = ColorStateList.valueOf(Color.RED)
+        binding.included.remove.icon.imageTintList = ColorStateList.valueOf(getThemeColor(requireContext(), com.google.android.material.R.attr.colorError))
         binding.included.remove.title.setText(R.string.remove)
+        binding.included.remove.title.setTextColor(getThemeColor(requireContext(), com.google.android.material.R.attr.colorError))
+
         binding.included.remove.root.setOnClickListener {
             DatabaseProviderWrap.noteDao.delete(item)
             behavior.state = BottomSheetBehavior.STATE_HIDDEN
@@ -228,44 +262,81 @@ class HomeFragment : Fragment(), NoteRecyclerViewAdapter.NoteItemListener,Pinned
     }
 
 
-    fun setColors(item: Note) {
-        binding.included.color1.imageTintList =
-            ColorStateList.valueOf(Color.parseColor(getString(R.string.color1)))
+    private fun setColors(item: Note) {
+        val color = ContextCompat.getColor(requireContext(), R.color.color1)
+        val color1 = requireContext().getBlendedColor(color)
+        binding.included.color1.imageTintList = ColorStateList.valueOf(color1)
         binding.included.color1.setOnClickListener {
-            DatabaseProviderWrap.noteDao.update(item.copy(color = R.color.color1))
+            DatabaseProviderWrap.noteDao.update(item.copy(color = color1))
         }
-        binding.included.color2.imageTintList =
-            ColorStateList.valueOf(Color.parseColor(getString(R.string.color2)))
-        binding.included.color2.setOnClickListener {
-            DatabaseProviderWrap.noteDao.update(item.copy(color = R.color.color2))
-        }
-        binding.included.color3.imageTintList =
-            ColorStateList.valueOf(Color.parseColor(getString(R.string.color3)))
-        binding.included.color3.setOnClickListener {
-            DatabaseProviderWrap.noteDao.update(item.copy(color = R.color.color3))
-        }
-        binding.included.color4.imageTintList =
-            ColorStateList.valueOf(Color.parseColor(getString(R.string.color4)))
-        binding.included.color4.setOnClickListener {
-            DatabaseProviderWrap.noteDao.update(item.copy(color = R.color.color4))
+        binding.included.color1.clipToOutline = true
+        binding.included.color1.outlineProvider = object : ViewOutlineProvider() {
+            override fun getOutline(view: View, outline: Outline) = outline.setRoundRect(0, 0, view.width, view.height, min(view.width, view.height).toFloat())
         }
 
-        binding.included.color5.imageTintList =
-            ColorStateList.valueOf(Color.parseColor(getString(R.string.color5)))
+        val color2 = requireContext().getBlendedColor(ContextCompat.getColor(requireContext(), R.color.color2))
+        binding.included.color2.imageTintList = ColorStateList.valueOf(color2)
+        binding.included.color2.setOnClickListener {
+            DatabaseProviderWrap.noteDao.update(item.copy(color = color2))
+        }
+        binding.included.color2.clipToOutline = true
+        binding.included.color2.outlineProvider = object : ViewOutlineProvider() {
+            override fun getOutline(view: View, outline: Outline) = outline.setRoundRect(0, 0, view.width, view.height, min(view.width, view.height).toFloat())
+        }
+
+        val color3 = requireContext().getBlendedColor(ContextCompat.getColor(requireContext(), R.color.color3))
+        binding.included.color3.imageTintList = ColorStateList.valueOf(color3)
+        binding.included.color3.setOnClickListener {
+            DatabaseProviderWrap.noteDao.update(item.copy(color = color3))
+        }
+        binding.included.color3.clipToOutline = true
+        binding.included.color3.outlineProvider = object : ViewOutlineProvider() {
+            override fun getOutline(view: View, outline: Outline) = outline.setRoundRect(0, 0, view.width, view.height, min(view.width, view.height).toFloat())
+        }
+
+        val color4 = requireContext().getBlendedColor(ContextCompat.getColor(requireContext(), R.color.color4))
+        binding.included.color4.imageTintList = ColorStateList.valueOf(color4)
+        binding.included.color4.setOnClickListener {
+            DatabaseProviderWrap.noteDao.update(item.copy(color = color4))
+        }
+        binding.included.color4.clipToOutline = true
+        binding.included.color4.outlineProvider = object : ViewOutlineProvider() {
+            override fun getOutline(view: View, outline: Outline) = outline.setRoundRect(0, 0, view.width, view.height, min(view.width, view.height).toFloat())
+        }
+
+
+        val color5 = requireContext().getBlendedColor(ContextCompat.getColor(requireContext(), R.color.color5))
+
+        binding.included.color5.imageTintList = ColorStateList.valueOf(color5)
         binding.included.color5.setOnClickListener {
-            DatabaseProviderWrap.noteDao.update(item.copy(color = R.color.color5))
+            DatabaseProviderWrap.noteDao.update(item.copy(color = color5))
         }
-        binding.included.color6.imageTintList =
-            ColorStateList.valueOf(Color.parseColor(getString(R.string.color6)))
+        binding.included.color5.clipToOutline = true
+        binding.included.color5.outlineProvider = object : ViewOutlineProvider() {
+            override fun getOutline(view: View, outline: Outline) = outline.setRoundRect(0, 0, view.width, view.height, min(view.width, view.height).toFloat())
+        }
+
+        val color6 = requireContext().getBlendedColor(ContextCompat.getColor(requireContext(), R.color.color6))
+
+        binding.included.color6.imageTintList = ColorStateList.valueOf(color6)
         binding.included.color6.setOnClickListener {
-            DatabaseProviderWrap.noteDao.update(item.copy(color = R.color.color6))
+            DatabaseProviderWrap.noteDao.update(item.copy(color = color6))
         }
-        binding.included.color7.imageTintList =
-            ColorStateList.valueOf(Color.parseColor(getString(R.string.color7)))
+        binding.included.color6.clipToOutline = true
+        binding.included.color6.outlineProvider = object : ViewOutlineProvider() {
+            override fun getOutline(view: View, outline: Outline) = outline.setRoundRect(0, 0, view.width, view.height, min(view.width, view.height).toFloat())
+        }
+
+        val color7 = requireContext().getBlendedColor(ContextCompat.getColor(requireContext(), R.color.color7))
+
+        binding.included.color7.imageTintList = ColorStateList.valueOf(color7)
         binding.included.color7.setOnClickListener {
-            DatabaseProviderWrap.noteDao.update(item.copy(color = R.color.color7))
+            DatabaseProviderWrap.noteDao.update(item.copy(color = color7))
         }
-        binding.included.color7.clipToOutline = false
+        binding.included.color7.clipToOutline = true
+        binding.included.color7.outlineProvider = object : ViewOutlineProvider() {
+            override fun getOutline(view: View, outline: Outline) = outline.setRoundRect(0, 0, view.width, view.height, min(view.width, view.height).toFloat())
+        }
 
 
     }
@@ -283,11 +354,9 @@ class HomeFragment : Fragment(), NoteRecyclerViewAdapter.NoteItemListener,Pinned
         val pinnedList: MutableList<Note> = mutableListOf()
         val unPinnedList: MutableList<Note> = mutableListOf()
         for (note in this) {
-            if (note.pinned)
-                pinnedList.add(note)
-            else
-                unPinnedList.add(note)
+            if (note.pinned) pinnedList.add(note)
+            else unPinnedList.add(note)
         }
-        return Pair(pinnedList,unPinnedList)
+        return Pair(pinnedList, unPinnedList)
     }
 }

@@ -39,7 +39,6 @@
                 android:layout_marginTop="32dp"
                 android:layout_marginBottom="8dp"
                 android:gravity="center"
-                android:clipToPadding="false"
                 android:orientation="horizontal"
                 >
 
@@ -48,7 +47,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="16dp"
-                    android:foreground="?selectableItemBackgroundBorderless"
+                    android:foreground="?android:selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_circle"
                     />
 
@@ -57,8 +56,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="16dp"
-                    android:foreground="?selectableItemBackgroundBorderless"
+                    android:foreground="?android:selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_circle"
+
                     />
 
                 <ImageView
@@ -66,7 +66,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="16dp"
-                    android:foreground="?selectableItemBackgroundBorderless"
+                    android:foreground="?android:selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_circle"
                     />
 
@@ -75,7 +75,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="16dp"
-                    android:foreground="?selectableItemBackgroundBorderless"
+                    android:foreground="?android:selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_circle"
                     />
 
@@ -84,27 +84,31 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="16dp"
-                    android:foreground="?selectableItemBackgroundBorderless"
+                    android:foreground="?android:selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_circle"
                     />
 
                 <ImageView
                     android:id="@+id/color6"
-                    android:layout_marginEnd="16dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:foreground="?selectableItemBackgroundBorderless"
+                    android:layout_marginEnd="16dp"
+                    android:foreground="?android:selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_circle"
                     />
+
                 <ImageView
                     android:id="@+id/color7"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:foreground="?selectableItemBackgroundBorderless"
+                    android:foreground="?android:selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_circle"
                     />
             </LinearLayout>
-
+            <include
+                android:id="@+id/clear_color"
+                layout="@layout/item_option"
+                />
             <include
                 android:id="@+id/edit"
                 layout="@layout/item_option"
@@ -114,6 +118,7 @@
                 android:id="@+id/remove"
                 layout="@layout/item_option"
                 />
+
         </LinearLayout>
     </FrameLayout>
 

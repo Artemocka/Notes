@@ -7,16 +7,16 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.databinding.FragmentItemBinding
 import com.example.myapplication.db.Note
-import com.example.myapplication.findResIdByAttr
+import com.example.myapplication.getThemeColor
 import com.example.myapplication.poop
 
 
-class NoteRecyclerViewAdapter :
-    ListAdapter<Note, NoteRecyclerViewAdapter.ViewHolder>(NoteItemCallBack()) {
+class NoteAdapter : ListAdapter<Note, NoteAdapter.ViewHolder>(NoteItemCallBack()) {
 
     var listener: NoteItemListener? = null
 
@@ -31,9 +31,7 @@ class NoteRecyclerViewAdapter :
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 
         val binding = FragmentItemBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
+            LayoutInflater.from(parent.context), parent, false
         )
         val viewHolder = ViewHolder(binding)
 
@@ -64,8 +62,7 @@ class NoteRecyclerViewAdapter :
     }
 
 
-    class ViewHolder(private val binding: FragmentItemBinding) :
-        RecyclerView.ViewHolder(binding.root) {
+    class ViewHolder(private val binding: FragmentItemBinding) : RecyclerView.ViewHolder(binding.root) {
         init {
             binding.root.setOnClickListener {
 
@@ -75,27 +72,38 @@ class NoteRecyclerViewAdapter :
         fun bind(item: Note) {
             binding.run {
 
-                title.text = item.title
+                if (item.title.isEmpty()) {
+                    title.isVisible = false
+                }else{
+                    title.isVisible = true
+                    title.text = item.title
+
+                }
                 note.text = item.content
 
+
+
                 if (item.color != 0) {
-
-                    val accentColor = ContextCompat.getColor(this.root.context, item.color)
-
-                    val cardColor =
-                        this.root.context.findResIdByAttr(androidx.cardview.R.attr.cardBackgroundColor)
-                    val alpha = ColorUtils.setAlphaComponent(accentColor, 50)
-
+                    val cardColor = getThemeColor(this.root.context, com.google.android.material.R.attr.colorSurfaceContainerHigh)
                     root.setCardBackgroundColor(
-                        ColorUtils.compositeColors(alpha, cardColor)
+                        ColorUtils.compositeColors(item.color, cardColor)
                     )
+                } else {
+                    val cardColor = getThemeColor(this.root.context, com.google.android.material.R.attr.colorSurfaceContainerHigh)
+                    root.setCardBackgroundColor(cardColor)
                 }
 
-                if (item.pinned)
-                    pin.imageTintList = ColorStateList.valueOf(Color.YELLOW)
-                else {
+                val starColor = getThemeColor(this.root.context, com.google.android.material.R.attr.colorAccent)
+
+                if (item.pinned) {
+                    pin.imageTintList = ColorStateList.valueOf(starColor)
+                    pin.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
+                } else {
+                    val alpha = ColorUtils.setAlphaComponent(starColor, 50)
+
                     poop("else")
-                    pin.imageTintList = ColorStateList.valueOf(Color.WHITE)
+                    pin.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
+                    pin.imageTintList = ColorStateList.valueOf(alpha)
                 }
 
             }
@@ -107,38 +115,10 @@ class NoteRecyclerViewAdapter :
 
     interface NoteItemListener {
         fun onClick(item: Note)
-        fun onStarClick(item:Note)
+        fun onStarClick(item: Note)
         fun onLongClick(item: Note)
     }
 
 
 }
 
-fun FragmentItemBinding.bindNote(item: Note) {
-    this.run {
-
-        title.text = item.title
-        note.text = item.content
-
-        if (item.color != 0) {
-
-            val accentColor = ContextCompat.getColor(this.root.context, item.color)
-
-            val cardColor =
-                this.root.context.findResIdByAttr(androidx.cardview.R.attr.cardBackgroundColor)
-            val alpha = ColorUtils.setAlphaComponent(accentColor, 50)
-
-            root.setCardBackgroundColor(
-                ColorUtils.compositeColors(alpha, cardColor)
-            )
-        }
-
-        if (item.pinned)
-            pin.imageTintList = ColorStateList.valueOf(Color.YELLOW)
-        else {
-            poop("else")
-            pin.imageTintList = ColorStateList.valueOf(Color.WHITE)
-        }
-
-    }
-}
