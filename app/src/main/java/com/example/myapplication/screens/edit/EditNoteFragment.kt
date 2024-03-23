@@ -1,8 +1,5 @@
 package com.example.myapplication.screens.edit
 
-import android.content.res.ColorStateList
-import android.graphics.Color
-import android.graphics.PorterDuff
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -66,7 +63,7 @@ class EditNoteFragment : Fragment() {
             binding.title.text.toString(),
             binding.content.text.toString(),
             note.color,
-            false,
+            note.pinned,
         )
 
         if (tempNote.content.isEmpty() && tempNote.title.isEmpty()) {

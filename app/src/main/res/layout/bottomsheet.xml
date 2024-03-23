@@ -17,13 +17,7 @@
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
         >
 
-        <com.google.android.material.bottomsheet.BottomSheetDragHandleView
-            android:layout_width="match_parent"
-            android:layout_height="28dp"
 
-            android:paddingBottom="0dp"
-
-            />
 
 
         <LinearLayout
@@ -31,80 +25,23 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             >
+            <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+                android:layout_width="match_parent"
+                android:layout_height="28dp"
 
-            <LinearLayout
+                android:paddingBottom="0dp"
+
+                />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler"
+                android:paddingHorizontal="8dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginTop="32dp"
-                android:layout_marginBottom="8dp"
-                android:gravity="center"
                 android:orientation="horizontal"
-                >
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
 
-                <ImageView
-                    android:id="@+id/color1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
-                    android:foreground="?android:selectableItemBackgroundBorderless"
-                    android:src="@drawable/ic_circle"
-                    />
-
-                <ImageView
-                    android:id="@+id/color2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
-                    android:foreground="?android:selectableItemBackgroundBorderless"
-                    android:src="@drawable/ic_circle"
-
-                    />
-
-                <ImageView
-                    android:id="@+id/color3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
-                    android:foreground="?android:selectableItemBackgroundBorderless"
-                    android:src="@drawable/ic_circle"
-                    />
-
-                <ImageView
-                    android:id="@+id/color4"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
-                    android:foreground="?android:selectableItemBackgroundBorderless"
-                    android:src="@drawable/ic_circle"
-                    />
-
-                <ImageView
-                    android:id="@+id/color5"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
-                    android:foreground="?android:selectableItemBackgroundBorderless"
-                    android:src="@drawable/ic_circle"
-                    />
-
-                <ImageView
-                    android:id="@+id/color6"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
-                    android:foreground="?android:selectableItemBackgroundBorderless"
-                    android:src="@drawable/ic_circle"
-                    />
-
-                <ImageView
-                    android:id="@+id/color7"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:foreground="?android:selectableItemBackgroundBorderless"
-                    android:src="@drawable/ic_circle"
-                    />
-            </LinearLayout>
+                />
             <include
                 android:id="@+id/clear_color"
                 layout="@layout/item_option"

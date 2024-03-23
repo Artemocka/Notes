@@ -3,17 +3,14 @@ package com.example.myapplication.screens.home
 
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.Outline
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
-import android.view.ViewOutlineProvider
 import android.view.inputmethod.InputMethodManager
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat.Type
 import androidx.core.view.isVisible
@@ -27,25 +24,29 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.myapplication.DatabaseProviderWrap
 import com.example.myapplication.R
+import com.example.myapplication.data.CircleColor
+import com.example.myapplication.data.CircleColorList
 import com.example.myapplication.databinding.FragmentHomeBinding
 import com.example.myapplication.db.Note
-import com.example.myapplication.getBlendedColor
 import com.example.myapplication.getThemeColor
 import com.example.myapplication.poop
 import com.example.myapplication.screens.home.recycler.NoteAdapter
+import com.example.myapplication.screens.home.recyclercolor.ColorAdapter
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-import kotlin.math.min
 
-class HomeFragment : Fragment(), NoteAdapter.NoteItemListener {
+class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.ColorItemListener {
 
 
     private lateinit var binding: FragmentHomeBinding
     private val unPinnedAdapter = NoteAdapter()
     private val pinnedAdapter = NoteAdapter()
+    private val colorAdapter = ColorAdapter()
     private val filter = MutableStateFlow("")
+    private var selectedItem: Note? = null
+    private var colors = MutableStateFlow<List<CircleColor>>(CircleColorList(mutableListOf()).list)
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -62,6 +63,9 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener {
 
         pinnedAdapter.listener = this
         unPinnedAdapter.listener = this
+        colorAdapter.listener = this
+        binding.included.recycler.adapter = colorAdapter
+        binding.included.recycler.itemAnimator = null
         binding.list.adapter = ConcatAdapter(pinnedAdapter, unPinnedAdapter)
         lifecycleScope.launch {
             combine(
@@ -123,11 +127,9 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener {
             binding.list.updatePaddingRelative(bottom = (v.parent as View).height - v.top)
         }
         binding.add.setOnClickListener {
-
             findNavController().navigate(HomeFragmentDirections.actionCreate())
         }
         binding.toolbar.setOnMenuItemClickListener {
-//            binding.toolbar.isVisible = false
             binding.searchBar.root.isVisible = true
             binding.toolbar.menu.findItem(R.id.app_bar_search).isVisible = false
             binding.searchBar.searchEditText.requestFocus()
@@ -156,9 +158,6 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener {
         val behavior = binding.included.bottomsheet.getBehavior()
         behavior.state = BottomSheetBehavior.STATE_HIDDEN
 
-        view.viewTreeObserver.addOnGlobalLayoutListener {
-
-        }
 
     }
 
@@ -189,8 +188,8 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener {
     }
 
     override fun onLongClick(item: Note) {
-
-        showSelectBottomSheet(item)
+        selectedItem = item
+        showSelectBottomSheet()
     }
 
 
@@ -222,9 +221,20 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener {
 
     }
 
-    private fun showSelectBottomSheet(item: Note) {
+    private fun showSelectBottomSheet() {
+        val item = selectedItem!!
         val behavior = binding.included.bottomsheet.getBehavior()
-        behavior.skipCollapsed = true
+        colors.value = colors.value.toMutableList().setSelected(item.color)
+
+        lifecycleScope.launch {
+            colors.collect{
+
+                colorAdapter.submitList(it)
+
+
+            }
+
+        }
 
         if (behavior.state == BottomSheetBehavior.STATE_EXPANDED) {
             behavior.state = BottomSheetBehavior.STATE_HIDDEN
@@ -256,91 +266,14 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener {
             DatabaseProviderWrap.noteDao.delete(item)
             behavior.state = BottomSheetBehavior.STATE_HIDDEN
         }
-        setColors(item)
-
-
     }
 
+    override fun onClick(item: CircleColor) {
 
-    private fun setColors(item: Note) {
-        val color = ContextCompat.getColor(requireContext(), R.color.color1)
-        val color1 = requireContext().getBlendedColor(color)
-        binding.included.color1.imageTintList = ColorStateList.valueOf(color1)
-        binding.included.color1.setOnClickListener {
-            DatabaseProviderWrap.noteDao.update(item.copy(color = color1))
-        }
-        binding.included.color1.clipToOutline = true
-        binding.included.color1.outlineProvider = object : ViewOutlineProvider() {
-            override fun getOutline(view: View, outline: Outline) = outline.setRoundRect(0, 0, view.width, view.height, min(view.width, view.height).toFloat())
-        }
+        colors.value = colors.value.toMutableList().setSelected(item.color)
 
-        val color2 = requireContext().getBlendedColor(ContextCompat.getColor(requireContext(), R.color.color2))
-        binding.included.color2.imageTintList = ColorStateList.valueOf(color2)
-        binding.included.color2.setOnClickListener {
-            DatabaseProviderWrap.noteDao.update(item.copy(color = color2))
-        }
-        binding.included.color2.clipToOutline = true
-        binding.included.color2.outlineProvider = object : ViewOutlineProvider() {
-            override fun getOutline(view: View, outline: Outline) = outline.setRoundRect(0, 0, view.width, view.height, min(view.width, view.height).toFloat())
-        }
-
-        val color3 = requireContext().getBlendedColor(ContextCompat.getColor(requireContext(), R.color.color3))
-        binding.included.color3.imageTintList = ColorStateList.valueOf(color3)
-        binding.included.color3.setOnClickListener {
-            DatabaseProviderWrap.noteDao.update(item.copy(color = color3))
-        }
-        binding.included.color3.clipToOutline = true
-        binding.included.color3.outlineProvider = object : ViewOutlineProvider() {
-            override fun getOutline(view: View, outline: Outline) = outline.setRoundRect(0, 0, view.width, view.height, min(view.width, view.height).toFloat())
-        }
-
-        val color4 = requireContext().getBlendedColor(ContextCompat.getColor(requireContext(), R.color.color4))
-        binding.included.color4.imageTintList = ColorStateList.valueOf(color4)
-        binding.included.color4.setOnClickListener {
-            DatabaseProviderWrap.noteDao.update(item.copy(color = color4))
-        }
-        binding.included.color4.clipToOutline = true
-        binding.included.color4.outlineProvider = object : ViewOutlineProvider() {
-            override fun getOutline(view: View, outline: Outline) = outline.setRoundRect(0, 0, view.width, view.height, min(view.width, view.height).toFloat())
-        }
-
-
-        val color5 = requireContext().getBlendedColor(ContextCompat.getColor(requireContext(), R.color.color5))
-
-        binding.included.color5.imageTintList = ColorStateList.valueOf(color5)
-        binding.included.color5.setOnClickListener {
-            DatabaseProviderWrap.noteDao.update(item.copy(color = color5))
-        }
-        binding.included.color5.clipToOutline = true
-        binding.included.color5.outlineProvider = object : ViewOutlineProvider() {
-            override fun getOutline(view: View, outline: Outline) = outline.setRoundRect(0, 0, view.width, view.height, min(view.width, view.height).toFloat())
-        }
-
-        val color6 = requireContext().getBlendedColor(ContextCompat.getColor(requireContext(), R.color.color6))
-
-        binding.included.color6.imageTintList = ColorStateList.valueOf(color6)
-        binding.included.color6.setOnClickListener {
-            DatabaseProviderWrap.noteDao.update(item.copy(color = color6))
-        }
-        binding.included.color6.clipToOutline = true
-        binding.included.color6.outlineProvider = object : ViewOutlineProvider() {
-            override fun getOutline(view: View, outline: Outline) = outline.setRoundRect(0, 0, view.width, view.height, min(view.width, view.height).toFloat())
-        }
-
-        val color7 = requireContext().getBlendedColor(ContextCompat.getColor(requireContext(), R.color.color7))
-
-        binding.included.color7.imageTintList = ColorStateList.valueOf(color7)
-        binding.included.color7.setOnClickListener {
-            DatabaseProviderWrap.noteDao.update(item.copy(color = color7))
-        }
-        binding.included.color7.clipToOutline = true
-        binding.included.color7.outlineProvider = object : ViewOutlineProvider() {
-            override fun getOutline(view: View, outline: Outline) = outline.setRoundRect(0, 0, view.width, view.height, min(view.width, view.height).toFloat())
-        }
-
-
+        DatabaseProviderWrap.noteDao.update(selectedItem!!.copy(color = item.color))
     }
-
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         val behavior = binding.included.bottomsheet.getBehavior()
@@ -359,4 +292,18 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener {
         }
         return Pair(pinnedList, unPinnedList)
     }
+
+    private fun MutableList<CircleColor>.setSelected(noteColor: Int): MutableList<CircleColor> {
+        return this.map {
+            if (it.color == noteColor) {
+                it.copy(selected = true)
+            } else if (it.color != noteColor && it.selected) {
+                it.copy(selected = false)
+            } else {
+                it
+            }
+
+        }.toMutableList()
+    }
+
 }
