@@ -6,4 +6,6 @@
     <string name="edit">Edit</string>
     <string name="search">Search</string>
     <string name="clear_color">Clear color</string>
+    <string name="pin">Pin</string>
+    <string name="star">Star</string>
 </resources>

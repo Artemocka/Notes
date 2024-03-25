@@ -60,7 +60,7 @@ class EditNoteFragment : Fragment() {
 
 
 
-        binding.toolbar.menu.findItem(R.id.toolbar_pin)?.run {
+        binding.toolbar.menu.findItem(R.id.toolbar_star)?.run {
             this.icon?.setIfPinned(note.pinned)
 
             this.setOnMenuItemClickListener {
@@ -102,7 +102,7 @@ class EditNoteFragment : Fragment() {
         if (pinned) {
             this.setColor(starColor)
         } else {
-            val blended = ColorUtils.setAlphaComponent(starColor, 50)
+            val blended = ColorUtils.setAlphaComponent(starColor, 90)
             this.setColor(blended)
         }
     }

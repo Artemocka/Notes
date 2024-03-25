@@ -90,12 +90,11 @@ class NoteAdapter : ListAdapter<Note, NoteAdapter.ViewHolder>(NoteItemCallBack()
                 if (item.pinned) {
                     pin.imageTintList = ColorStateList.valueOf(starColor)
                     pin.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
-                    pin.rotation = 45f
                 } else {
                     val alpha = ColorUtils.setAlphaComponent(starColor, 50)
-                    pin.rotation = 0f
                     pin.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
                     pin.imageTintList = ColorStateList.valueOf(alpha)
+
                 }
 
             }
