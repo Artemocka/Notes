@@ -58,8 +58,8 @@ class CreateNoteFragment : Fragment() {
         super.onDestroyView()
         val note = com.example.myapplication.db.Note(
             0,
-            binding.title.text.toString(),
-            binding.content.text.toString(),
+            binding.title.text.toString().trim(),
+            binding.content.text.toString().trim(),
             requireContext().findResIdByAttr(androidx.cardview.R.attr.cardBackgroundColor),
             false
         )

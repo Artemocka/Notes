@@ -5,15 +5,14 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.databinding.FragmentItemBinding
 import com.example.myapplication.db.Note
+import com.example.myapplication.getNoteColor
 import com.example.myapplication.getThemeColor
-import com.example.myapplication.poop
 
 
 class NoteAdapter : ListAdapter<Note, NoteAdapter.ViewHolder>(NoteItemCallBack()) {
@@ -44,8 +43,10 @@ class NoteAdapter : ListAdapter<Note, NoteAdapter.ViewHolder>(NoteItemCallBack()
             true
         }
         binding.pin.setOnClickListener {
-            val pinned = currentList[viewHolder.bindingAdapterPosition]
-            listener?.onStarClick(pinned)
+            if (viewHolder.bindingAdapterPosition >= 0) {
+                val pinned = currentList[viewHolder.bindingAdapterPosition]
+                listener?.onStarClick(pinned)
+            }
         }
 
 
@@ -63,33 +64,24 @@ class NoteAdapter : ListAdapter<Note, NoteAdapter.ViewHolder>(NoteItemCallBack()
 
 
     class ViewHolder(private val binding: FragmentItemBinding) : RecyclerView.ViewHolder(binding.root) {
-        init {
-            binding.root.setOnClickListener {
-
-            }
-        }
-
         fun bind(item: Note) {
             binding.run {
 
                 if (item.title.isEmpty()) {
                     title.isVisible = false
-                }else{
+                } else {
                     title.isVisible = true
                     title.text = item.title
 
                 }
                 note.text = item.content
 
-
-
+                val cardColor = getThemeColor(this.root.context, com.google.android.material.R.attr.colorSurfaceContainerHigh)
                 if (item.color != 0) {
-                    val cardColor = getThemeColor(this.root.context, com.google.android.material.R.attr.colorSurfaceContainerHigh)
                     root.setCardBackgroundColor(
-                        ColorUtils.compositeColors(item.color, cardColor)
+                        root.context.getNoteColor(item.color)
                     )
                 } else {
-                    val cardColor = getThemeColor(this.root.context, com.google.android.material.R.attr.colorSurfaceContainerHigh)
                     root.setCardBackgroundColor(cardColor)
                 }
 
@@ -98,10 +90,10 @@ class NoteAdapter : ListAdapter<Note, NoteAdapter.ViewHolder>(NoteItemCallBack()
                 if (item.pinned) {
                     pin.imageTintList = ColorStateList.valueOf(starColor)
                     pin.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
+                    pin.rotation = 45f
                 } else {
                     val alpha = ColorUtils.setAlphaComponent(starColor, 50)
-
-                    poop("else")
+                    pin.rotation = 0f
                     pin.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
                     pin.imageTintList = ColorStateList.valueOf(alpha)
                 }

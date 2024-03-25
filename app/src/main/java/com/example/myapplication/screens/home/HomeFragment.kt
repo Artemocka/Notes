@@ -29,7 +29,6 @@ import com.example.myapplication.data.CircleColorList
 import com.example.myapplication.databinding.FragmentHomeBinding
 import com.example.myapplication.db.Note
 import com.example.myapplication.getThemeColor
-import com.example.myapplication.poop
 import com.example.myapplication.screens.home.recycler.NoteAdapter
 import com.example.myapplication.screens.home.recyclercolor.ColorAdapter
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -46,7 +45,7 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
     private val colorAdapter = ColorAdapter()
     private val filter = MutableStateFlow("")
     private var selectedItem: Note? = null
-    private var colors = MutableStateFlow<List<CircleColor>>(CircleColorList(mutableListOf()).list)
+    private lateinit var colors: MutableStateFlow<List<CircleColor>>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -55,6 +54,7 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
         val behavior = binding.included.bottomsheet.getBehavior()
         behavior.setHidden()
         behavior.addBottomSheetCallback(BottomSheetCallbackImpl(binding.included.underlay))
+        colors = MutableStateFlow(CircleColorList(requireContext()).getColors())
         return binding.root
     }
 
@@ -68,13 +68,11 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
         binding.included.recycler.itemAnimator = null
         binding.list.adapter = ConcatAdapter(pinnedAdapter, unPinnedAdapter)
         lifecycleScope.launch {
+
             combine(
                 DatabaseProviderWrap.noteDao.getAll(), filter
             ) { list, query ->
-                if (query.isEmpty()) {
-                    Log.e("", "combine if $query")
-                    list
-                } else {
+                if (query.isNotEmpty()) {
                     Log.e("", "combine else $query")
 
                     list.filter {
@@ -82,23 +80,18 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
                             query, true
                         ) || it.content.contains(query, true)
                     }
+
+                } else {
+                    list
                 }
             }.collect {
-                Log.e("", "${it.size}")
                 val split = it.splitList()
+
                 pinnedAdapter.submitList(split.first)
                 unPinnedAdapter.submitList(split.second)
             }
         }
-        lifecycleScope.launch {
-            DatabaseProviderWrap.noteDao.getAll().collect {
-                val lists = it.splitList()
 
-                pinnedAdapter.submitList(lists.first)
-                unPinnedAdapter.submitList(lists.second)
-            }
-
-        }
 
         view.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
             val contentWidth = v.width - v.paddingLeft - v.paddingRight
@@ -115,7 +108,7 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
             }
             binding.list.updatePaddingRelative(
                 start = padding + insets.left,
-                top = padding + insets.top,
+//                top = padding + insets.top,
                 end = padding + insets.right,
             )
             binding.root.updatePaddingRelative(top = insets.top)
@@ -149,7 +142,6 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
 
         }
         binding.searchBar.searchEditText.addTextChangedListener {
-
             lifecycleScope.launch {
                 filter.emit(it.toString())
             }
@@ -183,7 +175,6 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
 
     override fun onStarClick(item: Note) {
         val invert = item.copy(pinned = !item.pinned)
-        poop("onStarClick- $invert")
         DatabaseProviderWrap.noteDao.update(invert)
     }
 
@@ -227,7 +218,7 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
         colors.value = colors.value.toMutableList().setSelected(item.color)
 
         lifecycleScope.launch {
-            colors.collect{
+            colors.collect {
 
                 colorAdapter.submitList(it)
 
@@ -242,25 +233,30 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
             behavior.state = BottomSheetBehavior.STATE_EXPANDED
         }
 
-        binding.included.clearColor.icon.setImageResource(R.drawable.ic_clear)
-        binding.included.clearColor.title.setText(R.string.clear_color)
-        binding.included.clearColor.root.setOnClickListener {
-            behavior.state = BottomSheetBehavior.STATE_HIDDEN
-            DatabaseProviderWrap.noteDao.update(item.copy(color = 0))
+        binding.included.clearColor.run {
+            icon.setImageResource(R.drawable.ic_clear)
+            title.setText(R.string.clear_color)
+            root.setOnClickListener {
+                behavior.state = BottomSheetBehavior.STATE_HIDDEN
+                DatabaseProviderWrap.noteDao.update(item.copy(color = 0))
 
+            }
+        }
+        binding.included.edit.run {
+            icon.setImageResource(R.drawable.ic_edit)
+            title.setText(R.string.edit)
+            root.setOnClickListener {
+                behavior.state = BottomSheetBehavior.STATE_HIDDEN
+                findNavController().navigate(HomeFragmentDirections.actionEdit(item.id))
+            }
         }
 
-        binding.included.edit.icon.setImageResource(R.drawable.ic_edit)
-        binding.included.edit.title.setText(R.string.edit)
-        binding.included.edit.root.setOnClickListener {
-            behavior.state = BottomSheetBehavior.STATE_HIDDEN
-            findNavController().navigate(HomeFragmentDirections.actionEdit(item.id))
+        binding.included.remove.run {
+            icon.setImageResource(R.drawable.ic_delete)
+            icon.imageTintList = ColorStateList.valueOf(getThemeColor(requireContext(), com.google.android.material.R.attr.colorError))
+            title.setText(R.string.remove)
+            title.setTextColor(getThemeColor(requireContext(), com.google.android.material.R.attr.colorError))
         }
-
-        binding.included.remove.icon.setImageResource(R.drawable.ic_delete)
-        binding.included.remove.icon.imageTintList = ColorStateList.valueOf(getThemeColor(requireContext(), com.google.android.material.R.attr.colorError))
-        binding.included.remove.title.setText(R.string.remove)
-        binding.included.remove.title.setTextColor(getThemeColor(requireContext(), com.google.android.material.R.attr.colorError))
 
         binding.included.remove.root.setOnClickListener {
             DatabaseProviderWrap.noteDao.delete(item)
@@ -269,9 +265,7 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
     }
 
     override fun onClick(item: CircleColor) {
-
         colors.value = colors.value.toMutableList().setSelected(item.color)
-
         DatabaseProviderWrap.noteDao.update(selectedItem!!.copy(color = item.color))
     }
 
@@ -283,7 +277,6 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
     }
 
     private fun List<Note>.splitList(): Pair<List<Note>, List<Note>> {
-        poop("вызов")
         val pinnedList: MutableList<Note> = mutableListOf()
         val unPinnedList: MutableList<Note> = mutableListOf()
         for (note in this) {

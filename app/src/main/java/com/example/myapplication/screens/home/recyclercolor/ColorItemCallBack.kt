@@ -1,4 +1,4 @@
-package com.example.myapplication.screens.home.recycler
+package com.example.myapplication.screens.home.recyclercolor
 
 import androidx.recyclerview.widget.DiffUtil
 import com.example.myapplication.data.CircleColor

@@ -9,38 +9,47 @@
     >
 
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:menu="@menu/search"
-            app:title="@string/app_name"
-            app:layout_constraintTop_toTopOf="parent"
-            android:elevation="1dp"
-            >
+       <LinearLayout
+           android:layout_width="match_parent"
+           android:layout_height="match_parent"
+           android:orientation="vertical">
+          <com.google.android.material.appbar.AppBarLayout
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content">
+              <com.google.android.material.appbar.MaterialToolbar
+                  android:id="@+id/toolbar"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  app:menu="@menu/search"
+                  app:title="@string/app_name"
+                  app:layout_constraintTop_toTopOf="parent"
+                  android:elevation="1dp"
+                  >
 
-            <include
-                android:id="@+id/search_bar"
-                layout="@layout/search_bar"
-                />
-        </com.google.android.material.appbar.MaterialToolbar>
+                  <include
+                      android:id="@+id/search_bar"
+                      layout="@layout/search_bar"
+                      />
+              </com.google.android.material.appbar.MaterialToolbar>
+          </com.google.android.material.appbar.AppBarLayout>
 
 
 
 
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/list"
-        android:name="com.example.wallet.ListFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipToPadding="false"
-        app:layoutManager="androidx.recyclerview.widget.StaggeredGridLayoutManager"
-        tools:context=".ListFragment"
-        tools:listitem="@layout/fragment_item"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintBottom_toBottomOf="parent"
-        />
+           <androidx.recyclerview.widget.RecyclerView
+               android:id="@+id/list"
+               android:name="com.example.wallet.ListFragment"
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:clipToPadding="false"
+               app:layoutManager="androidx.recyclerview.widget.StaggeredGridLayoutManager"
+               tools:context=".ListFragment"
+               tools:listitem="@layout/fragment_item"
+               app:layout_constraintTop_toBottomOf="@id/toolbar"
+               app:layout_constraintBottom_toBottomOf="parent"
+               />
+       </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/add"

@@ -1,17 +1,16 @@
 package com.example.myapplication
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import com.example.myapplication.databinding.ActivityMainBinding
-import com.example.myapplication.db.DatabaseProvider
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var navController: NavController
-    lateinit var binding: ActivityMainBinding
+    private lateinit var navController: NavController
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

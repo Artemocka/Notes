@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.R
 import com.example.myapplication.data.CircleColor
 import com.example.myapplication.databinding.ItemColorBinding
-import com.example.myapplication.screens.home.recycler.ColorItemCallBack
+import com.example.myapplication.getNoteColor
 import kotlin.math.min
 
 
@@ -49,21 +49,13 @@ class ColorAdapter : ListAdapter<CircleColor, ColorAdapter.ViewHolder>(ColorItem
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = currentList[position]
         holder.bind(item)
-
-
     }
 
 
     class ViewHolder(private val binding: ItemColorBinding) : RecyclerView.ViewHolder(binding.root) {
-        init {
-            binding.root.setOnClickListener {
-
-            }
-        }
-
         fun bind(item: CircleColor) {
             binding.run {
-                circle.imageTintList = ColorStateList.valueOf(item.color)
+                circle.imageTintList = ColorStateList.valueOf(binding.root.context.getNoteColor(item.color))
                 circle.clipToOutline = true
                 circle.outlineProvider = object : ViewOutlineProvider() {
                     override fun getOutline(view: View, outline: Outline) = outline.setRoundRect(0, 0, view.width, view.height, min(view.width, view.height).toFloat())
@@ -73,11 +65,8 @@ class ColorAdapter : ListAdapter<CircleColor, ColorAdapter.ViewHolder>(ColorItem
                 }else{
                     circle.setImageResource(R.drawable.ic_circle)
                 }
-
             }
         }
-
-
     }
 
 
