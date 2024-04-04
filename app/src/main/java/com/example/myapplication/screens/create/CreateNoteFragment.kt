@@ -9,16 +9,17 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.example.myapplication.DatabaseProviderWrap
 import com.example.myapplication.databinding.FragmentEditNoteBinding
 import com.example.myapplication.findResIdByAttr
+import com.example.myapplication.viemodel.HomeViewModel
 
 
 class CreateNoteFragment : Fragment() {
 
     private lateinit var binding: FragmentEditNoteBinding
-
+    private val homeViewModel by viewModels<HomeViewModel>(::requireActivity)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -64,9 +65,8 @@ class CreateNoteFragment : Fragment() {
             false
         )
 
-        if (note.content.isNotEmpty()||note.title.isNotEmpty()) {
-            DatabaseProviderWrap.noteDao.insert(note)
-        }
+        homeViewModel.createNote(note)
+
     }
 
 

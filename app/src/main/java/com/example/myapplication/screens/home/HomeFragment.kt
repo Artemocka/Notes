@@ -8,21 +8,20 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewGroup.MarginLayoutParams
 import android.view.inputmethod.InputMethodManager
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat.Type
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePaddingRelative
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.example.myapplication.DatabaseProviderWrap
 import com.example.myapplication.R
 import com.example.myapplication.data.CircleColor
 import com.example.myapplication.data.CircleColorList
@@ -31,7 +30,9 @@ import com.example.myapplication.db.Note
 import com.example.myapplication.getThemeColor
 import com.example.myapplication.screens.home.recycler.NoteAdapter
 import com.example.myapplication.screens.home.recyclercolor.ColorAdapter
+import com.example.myapplication.viemodel.HomeViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -46,6 +47,8 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
     private val filter = MutableStateFlow("")
     private var selectedItem: Note? = null
     private lateinit var colors: MutableStateFlow<List<CircleColor>>
+    private val homeViewModel by viewModels<HomeViewModel>(::requireActivity)
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -61,16 +64,58 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        pinnedAdapter.listener = this
-        unPinnedAdapter.listener = this
-        colorAdapter.listener = this
-        binding.included.recycler.adapter = colorAdapter
-        binding.included.recycler.itemAnimator = null
-        binding.list.adapter = ConcatAdapter(pinnedAdapter, unPinnedAdapter)
+        binding.run {
+            setAdapters()
+            setSearchbar()
+            setSnackbar()
+            setPaddings(view)
+            setFab()
+            setToolbarItemListener()
+            included.bottomsheet.getBehavior().setHidden()
+        }
+    }
+
+    private fun FragmentHomeBinding.setAdapters() {
+        pinnedAdapter.listener = this@HomeFragment
+        unPinnedAdapter.listener = this@HomeFragment
+        colorAdapter.listener = this@HomeFragment
+        included.recycler.adapter = colorAdapter
+        included.recycler.itemAnimator = null
+        list.adapter = ConcatAdapter(pinnedAdapter, unPinnedAdapter)
+    }
+
+    private fun FragmentHomeBinding.setToolbarItemListener() {
+        toolbar.setOnMenuItemClickListener {
+            searchBar.root.isVisible = true
+            toolbar.menu.findItem(R.id.app_bar_search).isVisible = false
+            searchBar.searchEditText.requestFocus()
+            searchBar.searchIcon.isVisible = false
+            val imm = root.context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+            imm?.showSoftInput(searchBar.searchEditText, 0)
+
+            true
+        }
+    }
+
+    private fun FragmentHomeBinding.setSnackbar() {
+        lifecycleScope.launch {
+            homeViewModel.snackbarContent.collect {
+                Snackbar.make(root, it, Snackbar.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun FragmentHomeBinding.setFab() {
+        add.setOnClickListener {
+            findNavController().navigate(HomeFragmentDirections.actionCreate())
+        }
+    }
+
+    private fun FragmentHomeBinding.setSearchbar() {
         lifecycleScope.launch {
 
             combine(
-                DatabaseProviderWrap.noteDao.getAll(), filter
+                homeViewModel.notes, filter
             ) { list, query ->
                 if (query.isNotEmpty()) {
                     Log.e("", "combine else $query")
@@ -92,7 +137,23 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
             }
         }
 
+        searchBar.cancelButton.setOnClickListener {
+            toolbar.menu.findItem(R.id.app_bar_search).isVisible = true
+            searchBar.searchEditText.clearFocus()
+            searchBar.searchEditText.text.clear()
+            searchBar.root.isVisible = false
+            searchBar.searchIcon.isVisible = true
+            hideKeyboard()
 
+        }
+        searchBar.searchEditText.addTextChangedListener {
+            lifecycleScope.launch {
+                filter.emit(it.toString())
+            }
+        }
+    }
+
+    private fun FragmentHomeBinding.setPaddings(view: View) {
         view.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
             val contentWidth = v.width - v.paddingLeft - v.paddingRight
             val column = contentWidth / resources.getDimensionPixelSize(R.dimen.column_min_width)
@@ -102,55 +163,22 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
 
         val padding = resources.getDimensionPixelSize(R.dimen.common_half)
         ViewCompat.setOnApplyWindowInsetsListener(view) { _, windowInsets ->
-            val insets = windowInsets.getInsets(Type.displayCutout() or Type.systemBars())
-            binding.add.updateLayoutParams<MarginLayoutParams> {
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.displayCutout() or WindowInsetsCompat.Type.systemBars())
+            add.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 bottomMargin = marginEnd + insets.bottom
             }
-            binding.list.updatePaddingRelative(
+            list.updatePaddingRelative(
                 start = padding + insets.left,
-//                top = padding + insets.top,
                 end = padding + insets.right,
             )
-            binding.root.updatePaddingRelative(top = insets.top)
-            binding.add.updatePaddingRelative(bottom = insets.bottom)
+            root.updatePaddingRelative(top = insets.top)
+            add.updatePaddingRelative(bottom = insets.bottom)
 
             windowInsets
         }
-        binding.add.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
-            binding.list.updatePaddingRelative(bottom = (v.parent as View).height - v.top)
+        add.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
+            list.updatePaddingRelative(bottom = (v.parent as View).height - v.top)
         }
-        binding.add.setOnClickListener {
-            findNavController().navigate(HomeFragmentDirections.actionCreate())
-        }
-        binding.toolbar.setOnMenuItemClickListener {
-            binding.searchBar.root.isVisible = true
-            binding.toolbar.menu.findItem(R.id.app_bar_search).isVisible = false
-            binding.searchBar.searchEditText.requestFocus()
-            binding.searchBar.searchIcon.isVisible = false
-            val imm = binding.root.context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
-            imm?.showSoftInput(binding.searchBar.searchEditText, 0)
-
-            true
-        }
-        binding.searchBar.cancelButton.setOnClickListener {
-            binding.toolbar.menu.findItem(R.id.app_bar_search).isVisible = true
-            binding.searchBar.searchEditText.clearFocus()
-            binding.searchBar.searchEditText.text.clear()
-            binding.searchBar.root.isVisible = false
-            binding.searchBar.searchIcon.isVisible = true
-            hideKeyboard()
-
-        }
-        binding.searchBar.searchEditText.addTextChangedListener {
-            lifecycleScope.launch {
-                filter.emit(it.toString())
-            }
-        }
-
-        val behavior = binding.included.bottomsheet.getBehavior()
-        behavior.state = BottomSheetBehavior.STATE_HIDDEN
-
-
     }
 
 
@@ -174,8 +202,7 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
     }
 
     override fun onStarClick(item: Note) {
-        val invert = item.copy(pinned = !item.pinned)
-        DatabaseProviderWrap.noteDao.update(invert)
+        homeViewModel.setStared(item)
     }
 
     override fun onLongClick(item: Note) {
@@ -219,12 +246,8 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
 
         lifecycleScope.launch {
             colors.collect {
-
                 colorAdapter.submitList(it)
-
-
             }
-
         }
 
         if (behavior.state == BottomSheetBehavior.STATE_EXPANDED) {
@@ -238,8 +261,7 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
             title.setText(R.string.clear_color)
             root.setOnClickListener {
                 behavior.state = BottomSheetBehavior.STATE_HIDDEN
-                DatabaseProviderWrap.noteDao.update(item.copy(color = 0))
-
+                homeViewModel.clearNoteColor(item)
             }
         }
         binding.included.edit.run {
@@ -259,14 +281,14 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
         }
 
         binding.included.remove.root.setOnClickListener {
-            DatabaseProviderWrap.noteDao.delete(item)
+            homeViewModel.deleteNote(item)
             behavior.state = BottomSheetBehavior.STATE_HIDDEN
         }
     }
 
     override fun onClick(item: CircleColor) {
         colors.value = colors.value.toMutableList().setSelected(item.color)
-        DatabaseProviderWrap.noteDao.update(selectedItem!!.copy(color = item.color))
+        homeViewModel.setNoteColor(selectedItem!!, item.color)
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {

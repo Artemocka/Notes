@@ -11,6 +11,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.myapplication.DatabaseProviderWrap
 import com.example.myapplication.R
@@ -19,12 +20,14 @@ import com.example.myapplication.db.Note
 import com.example.myapplication.getNoteColor
 import com.example.myapplication.getThemeColor
 import com.example.myapplication.poop
+import com.example.myapplication.viemodel.HomeViewModel
 
 
 class EditNoteFragment : Fragment() {
 
     private lateinit var binding: FragmentEditNoteBinding
     private lateinit var note: Note
+    private val homeViewModel by viewModels<HomeViewModel>(::requireActivity)
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -83,12 +86,8 @@ class EditNoteFragment : Fragment() {
             note.pinned,
         )
 
-        if (tempNote.content.isEmpty() && tempNote.title.isEmpty()) {
-            DatabaseProviderWrap.noteDao.delete(note)
-        } else {
+        homeViewModel.editNote(tempNote)
 
-            DatabaseProviderWrap.noteDao.update(tempNote)
-        }
     }
 
 
