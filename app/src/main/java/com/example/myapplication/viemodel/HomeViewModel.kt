@@ -22,7 +22,7 @@ class HomeViewModel : ViewModel() {
     ) { list, query ->
         if (query.isNotEmpty()) {
             list.filter {
-                it.title.contains(query, true) || it.content.contains(query, true)
+                it.title.contains(query, ignoreCase = true) || it.content.contains(query, ignoreCase = true)
             }
         } else {
             list

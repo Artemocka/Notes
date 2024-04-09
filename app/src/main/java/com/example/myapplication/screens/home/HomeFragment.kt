@@ -42,7 +42,7 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
     private val pinnedAdapter = NoteAdapter()
     private val colorAdapter = ColorAdapter()
     private var selectedItem: Note? = null
-    private lateinit var colors: MutableStateFlow<List<CircleColor>>
+    private val colors by lazy(LazyThreadSafetyMode.NONE) { MutableStateFlow(CircleColorList(requireContext()).getColors()) }
     private val homeViewModel by viewModels<HomeViewModel>(::requireActivity)
 
 
@@ -55,7 +55,6 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
         val behavior = binding.included.bottomsheet.getBehavior()
         behavior.setHidden()
         behavior.addBottomSheetCallback(BottomSheetCallbackImpl(binding.included.underlay))
-        colors = MutableStateFlow(CircleColorList(requireContext()).getColors())
         return binding.root
     }
 
