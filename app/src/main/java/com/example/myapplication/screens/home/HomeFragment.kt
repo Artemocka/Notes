@@ -34,7 +34,6 @@ import com.example.myapplication.viemodel.HomeViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.ColorItemListener {
@@ -42,7 +41,6 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
     private val unPinnedAdapter = NoteAdapter()
     private val pinnedAdapter = NoteAdapter()
     private val colorAdapter = ColorAdapter()
-    private val filter = MutableStateFlow("")
     private var selectedItem: Note? = null
     private lateinit var colors: MutableStateFlow<List<CircleColor>>
     private val homeViewModel by viewModels<HomeViewModel>(::requireActivity)
@@ -111,21 +109,9 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
 
     private fun FragmentHomeBinding.setSearchbar() {
         lifecycleScope.launch {
-                combine(
-                    homeViewModel.notes, filter
-                ) { list, query ->
-                    if (query.isNotEmpty()) {
-                        list.filter {
-                            it.title.contains(
-                                query, true
-                            ) || it.content.contains(query, true)
-                        }
-                    } else {
-                        list
-                    }
-                }.collect {
+               homeViewModel.notes.collect{
                     it.submitLists()
-                }
+               }
         }
 
         searchBar.cancelButton.setOnClickListener {
@@ -138,7 +124,7 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
         }
         searchBar.searchEditText.addTextChangedListener {
             lifecycleScope.launch {
-                filter.emit(it.toString())
+                homeViewModel.filter.emit(it.toString())
             }
         }
     }

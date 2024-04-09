@@ -6,22 +6,39 @@ import com.example.myapplication.DatabaseProviderWrap
 import com.example.myapplication.db.Note
 import com.example.myapplication.poop
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
-class HomeViewModel: ViewModel() {
+class HomeViewModel : ViewModel() {
 
     init {
         poop("viewmodel init")
     }
-    val notes=DatabaseProviderWrap.noteDao.getAll()
+
+    val filter = MutableStateFlow("")
+    val notes = combine(
+        DatabaseProviderWrap.noteDao.getAll(), filter
+    ) { list, query ->
+        if (query.isNotEmpty()) {
+            list.filter {
+                it.title.contains(query, true) || it.content.contains(query, true)
+            }
+        } else {
+            list
+        }
+
+    }
+
+
     val snackbarContent = MutableSharedFlow<String>()
-    fun createNote(note: Note){
-        if (note.content.isNotEmpty()||note.title.isNotEmpty()) {
+    fun createNote(note: Note) {
+        if (note.content.isNotEmpty() || note.title.isNotEmpty()) {
             DatabaseProviderWrap.noteDao.insert(note)
         }
     }
 
-    fun editNote(note: Note){
+    fun editNote(note: Note) {
         if (note.content.isEmpty() && note.title.isEmpty()) {
             DatabaseProviderWrap.noteDao.delete(note)
             viewModelScope.launch {
@@ -32,7 +49,7 @@ class HomeViewModel: ViewModel() {
         }
     }
 
-    fun deleteNote(note: Note){
+    fun deleteNote(note: Note) {
         poop("deleteNote: $note.id")
         DatabaseProviderWrap.noteDao.delete(note)
     }
@@ -41,11 +58,13 @@ class HomeViewModel: ViewModel() {
         poop("clearNoteColor: $note.id")
         DatabaseProviderWrap.noteDao.update(note.copy(color = 0))
     }
-    fun setNoteColor(note:Note, color:Int){
+
+    fun setNoteColor(note: Note, color: Int) {
         poop("setNoteColor: $note.id: $color")
         DatabaseProviderWrap.noteDao.update(note.copy(color = color))
     }
-    fun setStared(note: Note){
+
+    fun setStared(note: Note) {
         poop("setStared: $note.id")
         val invert = note.copy(pinned = !note.pinned)
         DatabaseProviderWrap.noteDao.update(invert)
