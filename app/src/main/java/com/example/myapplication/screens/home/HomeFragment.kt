@@ -4,7 +4,6 @@ package com.example.myapplication.screens.home
 import android.content.Context
 import android.content.res.ColorStateList
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -38,8 +37,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.ColorItemListener {
-
-
     private lateinit var binding: FragmentHomeBinding
     private val unPinnedAdapter = NoteAdapter()
     private val pinnedAdapter = NoteAdapter()
@@ -65,6 +62,9 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
         super.onViewCreated(view, savedInstanceState)
 
         binding.run {
+
+
+
             setAdapters()
             setSearchbar()
             setSnackbar()
@@ -92,7 +92,6 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
             searchBar.searchIcon.isVisible = false
             val imm = root.context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
             imm?.showSoftInput(searchBar.searchEditText, 0)
-
             true
         }
     }
@@ -113,25 +112,20 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
 
     private fun FragmentHomeBinding.setSearchbar() {
         lifecycleScope.launch {
-
             combine(
                 homeViewModel.notes, filter
             ) { list, query ->
                 if (query.isNotEmpty()) {
-                    Log.e("", "combine else $query")
-
                     list.filter {
                         it.title.contains(
                             query, true
                         ) || it.content.contains(query, true)
                     }
-
                 } else {
                     list
                 }
             }.collect {
                 val split = it.splitList()
-
                 pinnedAdapter.submitList(split.first)
                 unPinnedAdapter.submitList(split.second)
             }
@@ -144,7 +138,6 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
             searchBar.root.isVisible = false
             searchBar.searchIcon.isVisible = true
             hideKeyboard()
-
         }
         searchBar.searchEditText.addTextChangedListener {
             lifecycleScope.launch {
@@ -184,7 +177,6 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
 
     private fun View.getBehavior(): BottomSheetBehavior<View> {
         val params = layoutParams as CoordinatorLayout.LayoutParams
-
         return params.behavior as BottomSheetBehavior
     }
 
@@ -207,24 +199,21 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
 
     override fun onLongClick(item: Note) {
         selectedItem = item
-        showSelectBottomSheet()
+        binding.showSelectBottomSheet()
     }
 
 
     private inner class BottomSheetCallbackImpl(private val underlay: View) : BottomSheetBehavior.BottomSheetCallback() {
         override fun onStateChanged(bottomSheet: View, newState: Int) {
-            Log.e("", "onStateChanged\t$newState")
             when (newState) {
                 BottomSheetBehavior.STATE_HIDDEN -> {
                     hideKeyboard()
                     underlay.setOnClickListener(null)
                     underlay.isClickable = false
                 }
-
                 BottomSheetBehavior.STATE_DRAGGING -> {
                     hideKeyboard()
                 }
-
                 else -> {
                     underlay.setOnClickListener {
                         val behavior = bottomSheet.getBehavior()
@@ -239,24 +228,21 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
 
     }
 
-    private fun showSelectBottomSheet() {
+    private fun FragmentHomeBinding.showSelectBottomSheet() {
         val item = selectedItem!!
-        val behavior = binding.included.bottomsheet.getBehavior()
+        val behavior = included.bottomsheet.getBehavior()
         colors.value = colors.value.toMutableList().setSelected(item.color)
-
         lifecycleScope.launch {
             colors.collect {
                 colorAdapter.submitList(it)
             }
         }
-
         if (behavior.state == BottomSheetBehavior.STATE_EXPANDED) {
             behavior.state = BottomSheetBehavior.STATE_HIDDEN
         } else {
             behavior.state = BottomSheetBehavior.STATE_EXPANDED
         }
-
-        binding.included.clearColor.run {
+        included.clearColor.run {
             icon.setImageResource(R.drawable.ic_clear)
             title.setText(R.string.clear_color)
             root.setOnClickListener {
@@ -264,7 +250,7 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
                 homeViewModel.clearNoteColor(item)
             }
         }
-        binding.included.edit.run {
+        included.edit.run {
             icon.setImageResource(R.drawable.ic_edit)
             title.setText(R.string.edit)
             root.setOnClickListener {
@@ -272,15 +258,13 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
                 findNavController().navigate(HomeFragmentDirections.actionEdit(item.id))
             }
         }
-
-        binding.included.remove.run {
+        included.remove.run {
             icon.setImageResource(R.drawable.ic_delete)
             icon.imageTintList = ColorStateList.valueOf(getThemeColor(requireContext(), com.google.android.material.R.attr.colorError))
             title.setText(R.string.remove)
             title.setTextColor(getThemeColor(requireContext(), com.google.android.material.R.attr.colorError))
         }
-
-        binding.included.remove.root.setOnClickListener {
+        included.remove.root.setOnClickListener {
             homeViewModel.deleteNote(item)
             behavior.state = BottomSheetBehavior.STATE_HIDDEN
         }
@@ -294,7 +278,6 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         val behavior = binding.included.bottomsheet.getBehavior()
         behavior.state = BottomSheetBehavior.STATE_HIDDEN
-
         super.onViewStateRestored(savedInstanceState)
     }
 
@@ -317,8 +300,6 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
             } else {
                 it
             }
-
         }.toMutableList()
     }
-
 }
