@@ -6,6 +6,6 @@ import com.example.myapplication.DatabaseProviderWrap
 
 class ActivityViewModel(app: Application) : AndroidViewModel(app){
     init {
-        DatabaseProviderWrap.createDao(app)
+        DatabaseProviderWrap.createDao(this.getApplication())
     }
 }

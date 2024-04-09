@@ -13,14 +13,14 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var navController: NavController
     private lateinit var binding: ActivityMainBinding
+    private val activityViewModel by viewModels<ActivityViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val activityViewModel by viewModels<ActivityViewModel>()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         window.statusBarColor = 0
-
+        activityViewModel
         setContentView(binding.root)
         navController = Navigation.findNavController(this, R.id.nav_host_fragment)
 
