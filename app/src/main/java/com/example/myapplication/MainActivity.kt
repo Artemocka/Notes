@@ -1,11 +1,13 @@
 package com.example.myapplication
 
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import com.example.myapplication.databinding.ActivityMainBinding
+import com.example.myapplication.viemodel.ActivityViewModel
 
 class MainActivity : AppCompatActivity() {
 
@@ -14,7 +16,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        DatabaseProviderWrap.createDao(this)
+        val activityViewModel by viewModels<ActivityViewModel>()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         window.statusBarColor = 0
