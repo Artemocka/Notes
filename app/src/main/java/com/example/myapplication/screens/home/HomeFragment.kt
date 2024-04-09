@@ -27,6 +27,7 @@ import com.example.myapplication.data.CircleColorList
 import com.example.myapplication.databinding.FragmentHomeBinding
 import com.example.myapplication.db.Note
 import com.example.myapplication.getThemeColor
+import com.example.myapplication.poop
 import com.example.myapplication.screens.home.recycler.NoteAdapter
 import com.example.myapplication.screens.home.recyclercolor.ColorAdapter
 import com.example.myapplication.viemodel.HomeViewModel
@@ -51,6 +52,8 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentHomeBinding.inflate(layoutInflater)
+        binding.setAdapters()
+        binding.setSearchbar()
         val behavior = binding.included.bottomsheet.getBehavior()
         behavior.setHidden()
         behavior.addBottomSheetCallback(BottomSheetCallbackImpl(binding.included.underlay))
@@ -63,10 +66,6 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
 
         binding.run {
 
-
-
-            setAdapters()
-            setSearchbar()
             setSnackbar()
             setPaddings(view)
             setFab()
@@ -112,23 +111,21 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
 
     private fun FragmentHomeBinding.setSearchbar() {
         lifecycleScope.launch {
-            combine(
-                homeViewModel.notes, filter
-            ) { list, query ->
-                if (query.isNotEmpty()) {
-                    list.filter {
-                        it.title.contains(
-                            query, true
-                        ) || it.content.contains(query, true)
+                combine(
+                    homeViewModel.notes, filter
+                ) { list, query ->
+                    if (query.isNotEmpty()) {
+                        list.filter {
+                            it.title.contains(
+                                query, true
+                            ) || it.content.contains(query, true)
+                        }
+                    } else {
+                        list
                     }
-                } else {
-                    list
+                }.collect {
+                    it.submitLists()
                 }
-            }.collect {
-                val split = it.splitList()
-                pinnedAdapter.submitList(split.first)
-                unPinnedAdapter.submitList(split.second)
-            }
         }
 
         searchBar.cancelButton.setOnClickListener {
@@ -144,6 +141,15 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
                 filter.emit(it.toString())
             }
         }
+    }
+
+    private fun List<Note>.submitLists() {
+        val split = this.splitList()
+
+        poop("pinned: " + split.first.size.toString())
+        poop("unpinned: " + split.second.size.toString())
+        pinnedAdapter.submitList(split.first)
+        unPinnedAdapter.submitList(split.second)
     }
 
     private fun FragmentHomeBinding.setPaddings(view: View) {
@@ -211,9 +217,11 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
                     underlay.setOnClickListener(null)
                     underlay.isClickable = false
                 }
+
                 BottomSheetBehavior.STATE_DRAGGING -> {
                     hideKeyboard()
                 }
+
                 else -> {
                     underlay.setOnClickListener {
                         val behavior = bottomSheet.getBehavior()
