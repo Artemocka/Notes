@@ -17,10 +17,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        activityViewModel
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         window.statusBarColor = 0
-        activityViewModel
         setContentView(binding.root)
         navController = Navigation.findNavController(this, R.id.nav_host_fragment)
 

@@ -20,8 +20,8 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:navigationIcon="@drawable/ic_back"
             app:menu="@menu/pin"
+            app:navigationIcon="@drawable/ic_back"
             >
 
 
@@ -64,5 +64,68 @@
         app:layout_constraintTop_toBottomOf="@id/title"
         />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_bold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
 
+    <ImageView
+        android:id="@+id/iv_format_mode"
+        android:fitsSystemWindows="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_format_mode"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/content"
+        />
+
+    <ImageView
+        android:id="@+id/iv_bold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true"
+        android:src="@drawable/ic_bold"
+        app:layout_constraintBottom_toBottomOf="@id/content"
+        app:layout_constraintStart_toEndOf="@id/iv_format_mode"
+        />
+    <ImageView
+        android:id="@+id/iv_italic"
+        android:fitsSystemWindows="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_italic"
+        app:layout_constraintStart_toEndOf="@id/iv_bold"
+        app:layout_constraintBottom_toBottomOf="@id/content"
+        />
+    <ImageView
+        android:id="@+id/iv_underline"
+        android:fitsSystemWindows="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_underline"
+        app:layout_constraintStart_toEndOf="@id/iv_italic"
+        app:layout_constraintBottom_toBottomOf="@id/content"
+        />
+    <ImageView
+        android:id="@+id/iv_clear_format"
+        android:fitsSystemWindows="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_clear_format"
+        app:layout_constraintStart_toEndOf="@id/iv_underline"
+        app:layout_constraintBottom_toBottomOf="@id/content"
+        />
+    <ImageView
+        android:id="@+id/iv_exit_fromat_mode"
+        android:fitsSystemWindows="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_close"
+        app:layout_constraintStart_toEndOf="@id/iv_clear_format"
+        app:layout_constraintBottom_toBottomOf="@id/content"
+        />
 </androidx.constraintlayout.widget.ConstraintLayout>

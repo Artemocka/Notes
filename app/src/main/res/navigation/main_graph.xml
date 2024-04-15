@@ -13,13 +13,22 @@
         tools:layout="@layout/fragment_home"
         >
         <action
-            android:id="@+id/actionCreate"
-            app:destination="@id/createNoteFragment"
-            />
-        <action
             android:id="@+id/actionEdit"
             app:destination="@id/editNoteFragment"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_scale"
+            app:popExitAnim="@anim/fragment_exit_scale"
             />
+        <action
+            android:id="@+id/actionCreate"
+            app:destination="@id/editNoteFragment"
+            >
+            <argument
+                android:name="id"
+                android:defaultValue="-1"
+                />
+        </action>
     </fragment>
     <fragment
         android:id="@+id/createNoteFragment"

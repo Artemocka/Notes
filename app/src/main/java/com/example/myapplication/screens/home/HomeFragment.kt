@@ -102,7 +102,7 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
 
     private fun FragmentHomeBinding.setFab() {
         add.setOnClickListener {
-            findNavController().navigate(HomeFragmentDirections.actionCreate())
+            findNavController().navigate(HomeFragmentDirections.actionCreate(-1))
         }
     }
 
@@ -253,9 +253,9 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
         }
         included.remove.run {
             icon.setImageResource(R.drawable.ic_delete)
-            icon.imageTintList = ColorStateList.valueOf(getThemeColor(requireContext(), com.google.android.material.R.attr.colorError))
+            icon.imageTintList = ColorStateList.valueOf(requireContext().getThemeColor(com.google.android.material.R.attr.colorError))
             title.setText(R.string.remove)
-            title.setTextColor(getThemeColor(requireContext(), com.google.android.material.R.attr.colorError))
+            title.setTextColor(requireContext().getThemeColor( com.google.android.material.R.attr.colorError))
         }
         included.remove.root.setOnClickListener {
             homeViewModel.deleteNote(item)
