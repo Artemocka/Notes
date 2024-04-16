@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -8,124 +8,131 @@
     tools:context=".screens.create.CreateNoteFragment"
     >
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/app_bar"
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@id/title"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
         >
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/app_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:menu="@menu/pin"
-            app:navigationIcon="@drawable/ic_back"
+            app:layout_constraintBottom_toTopOf="@id/title"
+            app:layout_constraintTop_toTopOf="parent"
             >
 
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:menu="@menu/pin"
+                app:navigationIcon="@drawable/ic_back"
+                >
 
-        </com.google.android.material.appbar.MaterialToolbar>
 
-    </com.google.android.material.appbar.AppBarLayout>
+            </com.google.android.material.appbar.MaterialToolbar>
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <EditText
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:background="@null"
+            android:hint="@string/title"
+            android:imeOptions="actionNext"
+            android:inputType="textCapSentences|text|textMultiLine"
+            android:maxLines="1"
+            android:paddingVertical="8dp"
+            android:scrollbars="vertical"
+            android:textSize="24sp"
+            app:layout_constraintBottom_toTopOf="@id/content"
+            app:layout_constraintTop_toBottomOf="@id/app_bar"
 
 
-    <EditText
-        android:id="@+id/title"
+            />
+
+        <EditText
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginHorizontal="16dp"
+            android:background="@null"
+            android:gravity="top"
+            android:hint="@string/note"
+            android:inputType="textCapSentences|text|textMultiLine"
+            android:scrollbars="vertical"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/title"
+            />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/linear"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:background="@null"
-        android:hint="@string/title"
-        android:imeOptions="actionNext"
-        android:inputType="textCapSentences|text|textMultiLine"
-        android:maxLines="1"
-        android:paddingVertical="8dp"
-        android:scrollbars="vertical"
-        android:textSize="24sp"
-        app:layout_constraintBottom_toTopOf="@id/content"
-        app:layout_constraintTop_toBottomOf="@id/app_bar"
+        android:layout_gravity="bottom"
+        android:layout_marginHorizontal="8dp"
+        android:orientation="horizontal"
+        >
 
+        <ImageView
+            android:id="@+id/iv_format_mode"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_format_mode"
+            app:layout_constraintBottom_toBottomOf="@id/content"
+            app:layout_constraintStart_toStartOf="parent"
+            />
 
-        />
+        <ImageView
+            android:id="@+id/iv_bold"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_bold"
+            app:layout_constraintBottom_toBottomOf="@id/content"
+            app:layout_constraintStart_toEndOf="@id/iv_format_mode"
+            />
 
-    <EditText
-        android:id="@+id/content"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginHorizontal="16dp"
-        android:background="@null"
-        android:gravity="top"
-        android:hint="@string/note"
-        android:inputType="textCapSentences|text|textMultiLine"
-        android:scrollbars="vertical"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title"
-        />
+        <ImageView
+            android:id="@+id/iv_italic"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_italic"
+            app:layout_constraintBottom_toBottomOf="@id/content"
+            app:layout_constraintStart_toEndOf="@id/iv_bold"
+            />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_bold"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        />
+        <ImageView
+            android:id="@+id/iv_underline"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_underline"
+            app:layout_constraintBottom_toBottomOf="@id/content"
+            app:layout_constraintStart_toEndOf="@id/iv_italic"
+            />
 
-    <ImageView
-        android:id="@+id/iv_format_mode"
-        android:fitsSystemWindows="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_format_mode"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="@id/content"
-        />
+        <ImageView
+            android:id="@+id/iv_clear_format"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_clear_format"
+            app:layout_constraintBottom_toBottomOf="@id/content"
+            app:layout_constraintStart_toEndOf="@id/iv_underline"
+            />
 
-    <ImageView
-        android:id="@+id/iv_bold"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fitsSystemWindows="true"
-        android:src="@drawable/ic_bold"
-        app:layout_constraintBottom_toBottomOf="@id/content"
-        app:layout_constraintStart_toEndOf="@id/iv_format_mode"
-        />
-    <ImageView
-        android:id="@+id/iv_italic"
-        android:fitsSystemWindows="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_italic"
-        app:layout_constraintStart_toEndOf="@id/iv_bold"
-        app:layout_constraintBottom_toBottomOf="@id/content"
-        />
-    <ImageView
-        android:id="@+id/iv_underline"
-        android:fitsSystemWindows="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_underline"
-        app:layout_constraintStart_toEndOf="@id/iv_italic"
-        app:layout_constraintBottom_toBottomOf="@id/content"
-        />
-    <ImageView
-        android:id="@+id/iv_clear_format"
-        android:fitsSystemWindows="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_clear_format"
-        app:layout_constraintStart_toEndOf="@id/iv_underline"
-        app:layout_constraintBottom_toBottomOf="@id/content"
-        />
-    <ImageView
-        android:id="@+id/iv_exit_fromat_mode"
-        android:fitsSystemWindows="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_close"
-        app:layout_constraintStart_toEndOf="@id/iv_clear_format"
-        app:layout_constraintBottom_toBottomOf="@id/content"
-        />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <ImageView
+            android:id="@+id/iv_exit_fromat_mode"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_close"
+            app:layout_constraintBottom_toBottomOf="@id/content"
+            app:layout_constraintStart_toEndOf="@id/iv_clear_format"
+            />
+    </LinearLayout>
+</FrameLayout>

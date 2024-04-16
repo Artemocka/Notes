@@ -12,6 +12,11 @@ class EditViewModel : ViewModel() {
     val snackbarContent = MutableSharedFlow<String>()
     val currentNote =MutableStateFlow<Note>(Note(0,"","",0,false))
     var formatMode = MutableStateFlow(false)
+
+    val boldMode = MutableStateFlow(false)
+    val italicMode = MutableStateFlow(false)
+    val underlineMode = MutableStateFlow(false)
+
     fun editNote(note: Note) {
         if (note.id == 0) {
             if (note.content.isNotEmpty() || note.title.isNotEmpty()) {
