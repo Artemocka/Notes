@@ -1,5 +1,13 @@
 package com.example.myapplication.viemodel
 
+import android.graphics.Color
+import android.graphics.Typeface
+import android.text.Spannable
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
+import android.text.style.UnderlineSpan
+import android.widget.EditText
+import androidx.core.text.getSpans
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.DatabaseProviderWrap
@@ -44,8 +52,63 @@ class EditViewModel : ViewModel() {
         return currentNote.value
     }
 
-    fun clearModel() {
-        currentNote.value = Note(0,"","",0,false)
-        formatMode.value = false
+
+    fun setUnderline(content: EditText){
+        if (content.selectionStart != content.selectionEnd) {
+            content.text.setSpan(UnderlineSpan(), content.selectionStart, content.selectionEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            underlineMode.value = !underlineMode.value
+        } else {
+            boldMode.value = false
+            italicMode.value = false
+            underlineMode.value = !underlineMode.value
+        }
     }
+    fun setBold(content: EditText){
+        if (content.selectionStart != content.selectionEnd) {
+            content.text.setSpan(StyleSpan(Typeface.BOLD), content.selectionStart, content.selectionEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            underlineMode.value = !underlineMode.value
+        } else {
+            val underline = underlineMode.value
+            if (underline){
+                underlineMode.value = false
+            }
+            boldMode.value = !boldMode.value
+        }
+    }
+    fun setItalic(content: EditText){
+        if (content.selectionStart != content.selectionEnd) {
+            content.text.setSpan(UnderlineSpan(), content.selectionStart, content.selectionEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            underlineMode.value = !underlineMode.value
+        } else {
+            val underline = underlineMode.value
+            if (underline){
+                underlineMode.value = false
+            }
+            italicMode.value = !italicMode.value
+        }
+    }
+    fun setForeground(content: EditText, selectedColor:Color){
+        TODO()
+    }
+    fun setRelativeSize(content: EditText, relativeSize:Float){
+        TODO()
+    }
+
+    fun clearModes(content: EditText) {
+        if (content.selectionStart != content.selectionEnd) {
+            val spans = content.text.getSpans<Any>(content.selectionStart, content.selectionEnd)
+            for (span in spans) {
+                when (span) {
+                    is StyleSpan -> content.text.removeSpan(span)
+                    is UnderlineSpan -> content.text.removeSpan(span)
+                    is ForegroundColorSpan-> content.text.removeSpan(span)
+                }
+            }
+        } else {
+            underlineMode.value = false
+            italicMode.value = false
+            boldMode.value = false
+        }
+    }
+
 }

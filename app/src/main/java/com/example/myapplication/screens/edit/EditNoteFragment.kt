@@ -13,9 +13,7 @@ import android.text.style.UnderlineSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import androidx.annotation.RequiresApi
-import androidx.core.text.getSpans
 import androidx.core.text.toSpanned
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -58,7 +56,6 @@ class EditNoteFragment : Fragment() {
                     true -> {
                         binding.ivBold.imageTintList = ColorStateList.valueOf(MaterialColors.getColor(binding.root, androidx.appcompat.R.attr.colorAccent))
                     }
-
                     false -> {
                         binding.ivBold.imageTintList = null
                     }
@@ -71,9 +68,8 @@ class EditNoteFragment : Fragment() {
                     true -> {
                         binding.ivUnderline.imageTintList = ColorStateList.valueOf(MaterialColors.getColor(binding.root, androidx.appcompat.R.attr.colorAccent))
                     }
-
                     false -> {
-                        binding.ivBold.imageTintList = null
+                        binding.ivUnderline.imageTintList = null
                     }
                 }
             }
@@ -84,9 +80,8 @@ class EditNoteFragment : Fragment() {
                     true -> {
                         binding.ivItalic.imageTintList = ColorStateList.valueOf(MaterialColors.getColor(binding.root, androidx.appcompat.R.attr.colorAccent))
                     }
-
                     false -> {
-                        binding.ivBold.imageTintList = null
+                        binding.ivItalic.imageTintList = null
                     }
                 }
             }
@@ -162,66 +157,24 @@ class EditNoteFragment : Fragment() {
             note.color,
             note.pinned,
         )
-
         viewModel.editNote(tempNote)
 
     }
-
-    fun FragmentEditNoteBinding.setFormatButtons() {
+    private fun FragmentEditNoteBinding.setFormatButtons() {
         this.run {
             ivBold.setOnClickListener {
-                if (content.selectionStart != content.selectionEnd) {
-                    content.text.setSpan(StyleSpan(Typeface.BOLD), content.selectionStart, content.selectionEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                } else {
-                    viewModel.boldMode.value = !viewModel.boldMode.value
-                    viewModel.underlineMode.value = false
-
-                }
+                viewModel.setBold(binding.content)
             }
             ivItalic.setOnClickListener {
-                if (content.selectionStart != content.selectionEnd) {
-                    content.text.setSpan(StyleSpan(Typeface.ITALIC), content.selectionStart, content.selectionEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                } else {
-                    viewModel.italicMode.value = !viewModel.italicMode.value
-                    viewModel.underlineMode.value = false
-
-                }
+                viewModel.setItalic(binding.content)
             }
             ivUnderline.setOnClickListener {
-                if (content.selectionStart != content.selectionEnd) {
-                    content.text.setSpan(UnderlineSpan(), content.selectionStart, content.selectionEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    viewModel.underlineMode.value = !viewModel.underlineMode.value
-                } else {
-                    viewModel.underlineMode.value = !viewModel.underlineMode.value
-                    viewModel.boldMode.value = false
-                    viewModel.italicMode.value = false
-                }
+                viewModel.setUnderline(binding.content)
             }
             ivClearFormat.setOnClickListener {
-                if (content.selectionStart != content.selectionEnd) {
-                    val spans = content.text.getSpans<Any>(content.selectionStart, content.selectionEnd)
-                    for (span in spans) {
-                        when (span) {
-                            is StyleSpan -> content.text.removeSpan(span)
-                            is UnderlineSpan -> content.text.removeSpan(span)
-                        }
-                    }
-                } else {
-                    viewModel.underlineMode.value = false
-                    viewModel.italicMode.value = false
-                    viewModel.boldMode.value = false
-                }
+               viewModel.clearModes(binding.content)
             }
         }
     }
-
-
-    private fun EditText.hasChars(): Boolean {
-        for (i in text.subSequence(selectionStart, selectionEnd)) {
-            if (i.isLetter()) return true
-        }
-        return false
-    }
-
 
 }
