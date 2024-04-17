@@ -49,11 +49,15 @@
                 android:id="@+id/edit"
                 layout="@layout/item_option"
                 />
-
+            <include
+                android:id="@+id/make_copy"
+                layout="@layout/item_option"
+                />
             <include
                 android:id="@+id/remove"
                 layout="@layout/item_option"
                 />
+
 
         </LinearLayout>
     </FrameLayout>

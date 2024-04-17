@@ -243,6 +243,14 @@ class HomeFragment : Fragment(), NoteAdapter.NoteItemListener, ColorAdapter.Colo
                 homeViewModel.clearNoteColor(item)
             }
         }
+        included.makeCopy.run {
+            icon.setImageResource(R.drawable.ic_copy)
+            title.setText(R.string.make_copy)
+            root.setOnClickListener {
+                behavior.state = BottomSheetBehavior.STATE_HIDDEN
+                homeViewModel.makeNoteCopy(item)
+            }
+        }
         included.edit.run {
             icon.setImageResource(R.drawable.ic_edit)
             title.setText(R.string.edit)

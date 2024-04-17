@@ -8,15 +8,18 @@ import android.text.Editable
 import android.text.Html
 import android.text.Spannable
 import android.text.TextWatcher
+import android.text.style.RelativeSizeSpan
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import androidx.annotation.RequiresApi
 import androidx.core.text.toSpanned
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -63,6 +66,20 @@ class EditNoteFragment : Fragment() {
             }
         }
         lifecycleScope.launch {
+            viewModel.selectSizeMode.collect {
+                when (it) {
+                    true -> {
+                        binding.ivFormatSize.imageTintList = ColorStateList.valueOf(MaterialColors.getColor(binding.root, androidx.appcompat.R.attr.colorAccent))
+                        binding.slider.isVisible = true
+                    }
+                    false -> {
+                        binding.ivFormatSize.imageTintList = null
+                        binding.slider.isVisible = false
+                    }
+                }
+            }
+        }
+        lifecycleScope.launch {
             viewModel.underlineMode.collect {
                 when (it) {
                     true -> {
@@ -86,14 +103,21 @@ class EditNoteFragment : Fragment() {
                 }
             }
         }
+        lifecycleScope.launch {
+            viewModel.currentSize.collect {
+                binding.slider.value = it
+            }
+        }
 
 
 
         binding.run {
+            title.imeOptions = EditorInfo.IME_ACTION_NEXT
+            content.imeOptions = EditorInfo.TYPE_TEXT_FLAG_IME_MULTI_LINE
             title.setText(note.title)
             content.setText(Html.fromHtml(note.content, Html.FROM_HTML_MODE_COMPACT))
-            ivFormatMode.setOnClickListener {
-                viewModel.formatMode.value = !viewModel.formatMode.value
+            ivFormatSize.setOnClickListener {
+                viewModel.selectSizeMode.value = !viewModel.selectSizeMode.value
             }
             setFormatButtons()
         }
@@ -114,14 +138,26 @@ class EditNoteFragment : Fragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                when {
-                    viewModel.italicMode.value && viewModel.boldMode.value -> binding.content.text.setSpan(StyleSpan(Typeface.BOLD_ITALIC), start, start + count, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    viewModel.boldMode.value -> binding.content.text.setSpan(StyleSpan(Typeface.BOLD), start, start + count, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    viewModel.underlineMode.value -> binding.content.text.setSpan(UnderlineSpan(), start, start + count, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    viewModel.italicMode.value -> binding.content.text.setSpan(StyleSpan(Typeface.ITALIC), start, start + count, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                if (viewModel.italicMode.value && viewModel.boldMode.value){
+                    binding.content.text.setSpan(StyleSpan(Typeface.BOLD_ITALIC), start, start + count, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }else if(viewModel.italicMode.value){
+                    binding.content.text.setSpan(StyleSpan(Typeface.ITALIC), start, start + count, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }else if (viewModel.boldMode.value){
+                    binding.content.text.setSpan(StyleSpan(Typeface.BOLD), start, start + count, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                 }
+                if (viewModel.underlineMode.value){
+                    binding.content.text.setSpan(UnderlineSpan(), start, start + count, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                if (viewModel.currentSize.value!=1f){
+                    binding.content.text.setSpan(RelativeSizeSpan(viewModel.currentSize.value), start, start + count, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+
             }
         })
+
+        binding.slider.addOnChangeListener{_, value, _ ->
+            viewModel.setRelativeSize(binding.content, value)
+        }
 
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
@@ -150,6 +186,7 @@ class EditNoteFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+
         val tempNote = Note(
             note.id,
             binding.title.text.toString().trim(),
@@ -160,6 +197,7 @@ class EditNoteFragment : Fragment() {
         viewModel.editNote(tempNote)
 
     }
+
     private fun FragmentEditNoteBinding.setFormatButtons() {
         this.run {
             ivBold.setOnClickListener {
@@ -172,7 +210,7 @@ class EditNoteFragment : Fragment() {
                 viewModel.setUnderline(binding.content)
             }
             ivClearFormat.setOnClickListener {
-               viewModel.clearModes(binding.content)
+                viewModel.clearModes(binding.content)
             }
         }
     }

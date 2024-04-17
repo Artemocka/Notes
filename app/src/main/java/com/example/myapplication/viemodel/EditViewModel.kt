@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.text.Spannable
 import android.text.style.ForegroundColorSpan
+import android.text.style.RelativeSizeSpan
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
 import android.widget.EditText
@@ -20,10 +21,11 @@ class EditViewModel : ViewModel() {
     val snackbarContent = MutableSharedFlow<String>()
     val currentNote =MutableStateFlow<Note>(Note(0,"","",0,false))
     var formatMode = MutableStateFlow(false)
-
+    var selectSizeMode = MutableStateFlow(false)
     val boldMode = MutableStateFlow(false)
     val italicMode = MutableStateFlow(false)
     val underlineMode = MutableStateFlow(false)
+    var currentSize = MutableStateFlow(1f)
 
     fun editNote(note: Note) {
         if (note.id == 0) {
@@ -58,8 +60,6 @@ class EditViewModel : ViewModel() {
             content.text.setSpan(UnderlineSpan(), content.selectionStart, content.selectionEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             underlineMode.value = !underlineMode.value
         } else {
-            boldMode.value = false
-            italicMode.value = false
             underlineMode.value = !underlineMode.value
         }
     }
@@ -68,10 +68,6 @@ class EditViewModel : ViewModel() {
             content.text.setSpan(StyleSpan(Typeface.BOLD), content.selectionStart, content.selectionEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             underlineMode.value = !underlineMode.value
         } else {
-            val underline = underlineMode.value
-            if (underline){
-                underlineMode.value = false
-            }
             boldMode.value = !boldMode.value
         }
     }
@@ -80,10 +76,6 @@ class EditViewModel : ViewModel() {
             content.text.setSpan(UnderlineSpan(), content.selectionStart, content.selectionEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             underlineMode.value = !underlineMode.value
         } else {
-            val underline = underlineMode.value
-            if (underline){
-                underlineMode.value = false
-            }
             italicMode.value = !italicMode.value
         }
     }
@@ -91,7 +83,11 @@ class EditViewModel : ViewModel() {
         TODO()
     }
     fun setRelativeSize(content: EditText, relativeSize:Float){
-        TODO()
+        if (content.selectionStart != content.selectionEnd) {
+            content.text.setSpan(RelativeSizeSpan(currentSize.value), content.selectionStart, content.selectionEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        } else {
+            currentSize.value = relativeSize
+        }
     }
 
     fun clearModes(content: EditText) {
